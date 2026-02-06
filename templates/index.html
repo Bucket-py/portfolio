@@ -1,21 +1,43 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="static/styles.css">
-    </head>
-    <body>
-        <div class="Projects">        
-            <h1>My Projects</h1>
-            <ul>
-                {% for repo in repos %}
-                <li>{{ repo.name }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    </body>
+<head>
+    <meta charset="utf-8">
+    <title>My Projects</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="Projects">        
+        <h1>My Projects</h1>
+        <ul id="repo-list">
+            {% for repo in repos %}
+            <li data-name="{{ repo.name }}">
+                <a href="{{ repo.url }}" target="_blank">{{ repo.name }}</a>
+                <p>{{ repo.description or "No description" }}</p>
+                <small>{{ repo.language or "Unknown" }} · ⭐ {{ repo.stars }}</small>
+                <button class="hide-btn">Hide</button>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+    document.querySelectorAll('.hide-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const li = e.target.closest('li');
+            const repoName = li.dataset.name;
+
+            await fetch("{{ url_for('toggle_hide') }}", {
+                method: "POST",
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                body: new URLSearchParams({
+                    repo_name: repoName,
+                    action: "hide"
+                })
+            });
+
+            li.remove(); // immediately remove from the page
+        });
+    });
+    </script>
+</body>
 </html>
